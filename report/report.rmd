@@ -1,0 +1,339 @@
+---
+title             : "Four best practices for measuring news sentiment using 'off-the-shelf' dictionaries: a large-scale p-hacking experiment"
+shorttitle        : "DICTIONARY-BASED METHODS"
+
+author: 
+  - name          : "Chung-hong Chan"
+    affiliation   : "1"
+    corresponding : yes
+    address       : "A5, 6 (section A), 68159 Mannheim, Germany"
+    email         : "chung-hong.chan@mzes.uni-mannheim.de"
+  - name          : "Joseph Bajjalieh"
+    affiliation   : "2"    
+  - name          : "Loretta Auvil"
+    affiliation   : "2"
+  - name          : "Hartmut Wessler"
+    affiliation   : "1"
+  - name          : "Scott Althaus"
+    affiliation   : "2"
+  - name          : "Kasper Welbers"
+    affiliation   : "3"
+  - name          : "Wouter van Atteveldt"
+    affiliation   : "3"
+  - name          : "Marc Jungblut"
+    affiliation   : "4"
+
+affiliation:
+  - id            : "1"
+    institution   : "Mannheimer Zentrum für Europäische Sozialforschung, Universität Mannheim, Germany"
+  - id            : "2"
+    institution   : "Cline Center for Advanced Social Research, University of Illinois Urbana-Champaign, USA"
+  - id            : "3"
+    institution   : "Department of Communication Science, Vrije Universiteit Amsterdam, Netherlands"
+  - id            : "4"
+    institution   : "Department of Media and Communication, Ludwig Maximilian University of Munich, Germany"
+    
+authornote: |
+  We would like to thank Dr Stefanie Walter (Zentrum für Medien-, Kommunikations- und Informationsforschung, Universität Bremen) and Professor Sandra González-Bailón (Annenberg School for Communication, University of Pennsylvania) for sharing details about their studies. This project was funded by a research grant from the 1) German Research Foundation (Deutsche Forschungsgemeinschaft), 2) The Netherlands Organisation for Scientific Research (Nederlandse Organisatie voor Wetenschappelijk Onderzoek) and 3) the National Endowment for the Humanities, through the Trans-Atlantic Platform’s Digging into Data Challenge funding program.
+  This paper has been provisionally accepted by Computational Communication Research.
+
+abstract: |
+  We examined the validity of 37 sentiment scores based on dictionary-based methods using a large news corpus and demonstrated the risk of generating a spectrum of results with different levels of statistical significance by presenting an analysis of relationships between news sentiment and U.S. presidential approval. We summarize our findings into four best practices: 1) use a suitable sentiment dictionary; 2) do not assume that the validity and reliability of the dictionary is 'built-in'; 3) check for the influence of content length and 4) do not use multiple dictionaries to test the same statistical hypothesis.
+  
+keywords          : "sentiment analysis, p-hacking, news sentiment, agenda setting, text-as-data, validity"
+wordcount         : "9514"
+
+bibliography      : ["ots.bib"]
+
+floatsintext      : yes
+figurelist        : no
+tablelist         : no
+figsintext        : yes
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+appendix          : "appendices.rmd"
+
+documentclass     : "apa6"
+classoption       : "man"
+output:
+  papaja::apa6_pdf:
+    includes:
+      in_header: header.tex
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+r_refs("r-references.bib")
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+This paper uses a p-hacking experiment to demonstrate how different conclusions can be drawn using an array of 37 different dictionary-based sentiment scores from the same corpus. The two purposes of this paper are to 1) show the often overlooked validity problem of using these sentiment scores and; 2) suggest ways to mitigate the problem.
+
+The main focus of this paper is dictionary-based sentiment analysis. It is a technique that uses a *dictionary* (list of words) to classify a piece of text by positive or negative sentiment[^1]. The method was proposed as a solution in computer-assisted content analysis [@Stone1963] and later adopted as a marketing tool by computer scientists. For example, one of the earliest papers in computer science literature on dictionary-based methods summarizes the polarity of user reviews of the products of an online shop [@Hu2004] . Such applications were subsequently extrapolated for new analysis. Following previous studies [e.g. @Ribeiro2016; @Boukes2019], we call these applications *'off the shelf'* to mark the fact that researchers use dictionaries developed by other scholars without adjusting them for their own particular use.
+
+[^1]: This paper deals with dictionary-based sentiment analysis only. Indeed, there are other applications of dictionary-based methods in the realm of communication studies, e.g. measurement of populism [@Rooduijn2011]. Although these applications are not studied in this paper, in principle the findings from this study still apply.
+
+Most of these dictionaries were not developed and validated for news texts, but researchers still use them in news analysis. This off-the-shelf dictionary-based sentiment analysis has been used quite heavily in political communication literature [e.g. @Balmas2017; @Boukes2019; @Haselmayer2016; @Soroka2015; @Young2012]. New dictionaries such as Lexicoder [@Young2012], VADER [@gilbert2014vader] and crowd-sourcing-based sentiment dictionaries [@Haselmayer2016] were developed for application in communication science.
+
+The advantages of these off-the-shelf methods are obvious: compared with traditional content analysis, these methods require no human input. In addition, the results are very easy to interpret. Moreover, in the primary studies dealing with dictionary development, some developers found very strong agreement between dictionary-based classification and human judgments in the contexts of their intended applications [e.g. @Haselmayer2016; @gilbert2014vader; @Young2012]. Because of their apparent validity, many authors use these off-the-shelf sentiment dictionaries in their work with their own data, assuming that such an application should obtain similar levels of reliability and validity. However, scholars have criticized such use of off-the-shelf dictionary-based methods on two fronts: methodological and theoretical.
+
+Methodologically, these sentiment analysis tools rely on two very simple assumptions: the bag-of-words assumption and the additivity assumption [@Young2012]. The bag-of-words assumption maintains that the order of the words in a text does not matter. Therefore, *'my cat is bad'* has the same sentiment level as its nonsensical rearrangements, such as *'bad my is cat'* and *'is my cat bad'.* Many, but not all, of these sentiment dictionaries do not consider the grammatical functions of words and even suggest converting all text to lowercase. One example is the inclusion of the word *trump* (as a verb as in the sentence '*machine learning methods trump dictionary-based methods*' or as a noun as in the sentence '*he plays the trump*') as a positive word in Bing Liu's dictionary [@Hu2004]. When the grammatical functions of the word *trump* are ignored, as with the bag-of-words assumption, the sentence 'Trump is bad', wherein 'Trump' is a proper noun, is rated as neutral (the negativity of the word '*bad*' is cancelled by '*trump*') while these same parameters situate the similarly constructed sentence 'Hillary is bad' as negative. Meanwhile, the additivity assumption maintains that text with a higher frequency of sentiment words has a higher level of actual sentiment. For example, '*my cat is bad and ugly*' is more negative than '*my cat is bad*'. This assumption usually ignores grammatical elements such as adverbs (e.g. '*my cat is very bad*' should be more negative than '*my cat is bad*', but most methods cannot handle the amplification effect of the adverb '*very*'). Most widely used dictionaries have acknowledged the weaknesses of these two assumptions. For example, Lexicoder [@Young2012] provides a negated version of the dictionary (e.g. "not good") and an R preprocessing script to to remove special cases of language use (e.g. "good bye" should not be classified as positive). Many older ones, e.g. Bing Liu and LIWC [@Tausczik2009], still rely on these two simple assumptions.
+
+Moreover, off-the-shelf dictionary-based methods are sensitive to the features of source material, a limitation known as the domain-specificity problem. Previous benchmarks revealed that these methods demonstrated limited validity and reliability when applied to new datasets [@GonzlezBailn2015; @Ribeiro2016]. This domain-specificity problem was addressed in the literature with technical solutions such as machine learning methods, which have been proposed [@GonzlezBailn2015] and further developed [@Rudkowsky2018]. Other scholars suggest tuning dictionaries according to the source material [@Diesner2015; @Grimmer2013]  by, for example, adding domain-specific words to an existing dictionary and/or deleting words that have a different connotation in a new domain. In addition, @barbera2016methodological criticize these methods as 'independent of any actual human input on the document level'. It is possible to revalidate the performance of dictionary-based methods by human coding for every application. This revalidation practice has been advocated by several scholars [e.g. @Grimmer2013; @Ribeiro2016]
+
+Beyond the methodological criticism, some scholars also question what dictionary-based methods actually measure in theoretical terms. For this, we need to go back to the fundamental question of '*what is sentiment*?'. According to the literature, 'sentiment' can mean different things [@Puschmann2018]. For example, computer science literature defines 'sentiment' as the writer's 'appraisal or feelings towards an entity or an event' [@liu2010sentiment; and a similar definition by @Munezero2014] because the original intended use case of such tools was for product reviews with obvious targets (i.e. obvious entities or events). Other definitions include 'affect expressed in a text' and 'the emotional state of a text's author' [@Puschmann2018, pp. 1]. @Puschmann2018 argue that the 'measurement of something called 'sentiment' frequently fails to establish what sentiment might actually mean'. They base their criticism on the fact that researchers have used sentiment analysis to extract subjective emotional states from raw text using tools originally intended for uncovering the polarity of product reviews. The original developers of LIWC [@Tausczik2009], for example, argue that language and behaviour are linked and thus that their dictionary-based method can infer the emotional states of authors. However, some computer scientists reject such inference [@liu2010sentiment; @pang:2008:oms].
+
+In this study, we used a simpler definition of sentiment as 'emotions expressed in a text'.[^2] In this understanding, sentiment is communicated through text, regardless of whether it reflects the actual subjective state of the text's author. More specifically, we define news sentiment as 'emotions expressed in a news article'. This definition does not include any target or inference, and is in line with the tradition in communication science of studying news tone, news negativity, news frames and 'media affect' [@Young2012]. We share the conviction of some computer scientists that it is very difficult to infer an author's emotional state [@liu2010sentiment; @pang:2008:oms] from a text and thus sentiment **might** reflect the subjective state of the text's author. Authors can deliberately choose to express something that does not reflect their mood. Moreover, when we study journalistic text, it is difficult to attribute a piece of work to one author because a piece of news text can be an intellectual product of many people, such as reporters, journalistic assistants, copy-editors, fact checkers and editors. Here, it is helpful to note that we chose not to use the word 'affect' in our definition of news sentiment, as in previous papers [@Puschmann2018; @Young2012], because affect is a non-conscious experience and thus is difficult to realize in language alone. [@Munezero2014 presents a useful discussion on the differences between affect, emotion, sentiment and opinion]. In the rest of this paper, the word *sentiment* refers to the latent construct of 'emotions expressed in a text' that we measure by sentiment analysis.
+
+[^2]: Emotions are defined here as 'preconscious social expressions of feelings and affect influenced by culture' [@Munezero2014, p. 4].
+
+## Validation
+
+Given the problem of domain-specificity, the validity of applying an off-the-shelf dictionary to one's domain application could at best be face validity. Notably a recent delineation of validity [@atteveldt:2018:wcm, p. 86-87] situates such claims of face validity as insufficient: 'The validity of a method or tool is dependent on the context in which it is used, so even if a researcher uses an existing off-the-shelf tool with published validity results it is vital to show how well it performs in a specific domain and on a specific task.' Failing to provide such revalidation can have dire consequences because systematic biases introduced by invalid measurements can spoil subsequent analyses [@atteveldt:2018:wcm].
+
+The current study addresses the common problems that can stem from employing off-the-shelf dictionaries and demonstrates that unvalidated off-the-shelf applications of these methods are not robust enough to prevent dubious conclusions when applied to solve communication science problems. In doing so, we show that the validity of these methods for measuring news sentiment is not self-evident. We then demonstrate the seriousness of the problem by showing how different conclusions can be easily derived from such approaches.
+
+In the first part of the study, we analysed a set of dictionary-based sentiment scores as if they were a set of psychometric test items. Here, we reasoned that the psychometric properties of those tools could serve as measurements for the hidden construct of news sentiment. Based on classical test theory, a partial list of validity measures were studied, including i) convergent validity (are they correlated with each other?) and ii) structural validity (are they loaded into a unidimensional latent variable?). The second part of the paper puts those validity-challenged sentiment scores into action. In previous papers, sentiment scores extracted from news text are presented as time series [e.g. @Haselmayer2016; @leetaru:2011:c; @Young2012]. In this part of the study, we demonstrate that time series analyses of news sentiment can yield misleading conclusions using a *p-hacking* approach; we based this work on an analysis done by @cohen:2004:ini. Accordingly, we applied the same analysis to each of our 37 sentiment scores to test the same hypothesis and harvest those with a significant p-value.
+
+## The relationship between news sentiment and presidential approval
+
+For the p-hacking experiment, our hypothesis was derived from @cohen:2004:ini. He argued that *both* good and bad presidential news can impact the approval rating of US presidents; therefore, the direction of influence can sometimes be counterintuitive. One example mentioned by @cohen:2004:ini relates to the high popularity of Bill Clinton after his sex scandal. Building on Cohen's [-@cohen:2004:ini] argument, in our own study the extremes in news sentiment (positive or negative) are assumed to be associated with *subsequent* extremes in presidential approval (but not the reverse direction of influence). Put it in the terminology of time series analysis, extremes in news sentiment are a *Granger-cause (G-cause)* of the extremes in presidential approval.
+
+Although our hypothesis is derived from @cohen:2004:ini, the hypothesis of the analysis in our p-hacking experiment is different in three respects. Firstly, Cohen's argument [-@cohen:2004:ini] is based on an analysis of the annually aggregated news tone of presidential news in the NYT [@ragsdale1997disconnected] and the annually aggregated presidential approval from Gallup Polls. Our hypothesis is not limited to presidential news and instead extends across all news. Secondly, there are differences in operationalization of news tone. The aggregated news tone used by @cohen:2004:ini was hand-coded, but not computationally extracted as in the current study. Finally, we used a Granger causality test (the standard method to study agenda setting), instead of simple linear regression as in @cohen:2004:ini.
+
+We would like to emphasize that the purpose of this study is **not** to replicate or extend Cohen's argument. Instead, we use our hypothesis as a case study to demonstrate the properties of sentiment scores based on off-the-shelf sentiment dictionaries and the risks of using them in domain applications without first establishing their validity for addressing the study's research questions [as proposed in @atteveldt:2018:wcm]. Thus, we have no 'ground truth' and do not present a theoretical expectation on how the two variables (news sentiment and presidential approval) should behave; thus, we do not consider which p-value from our p-hacking experiment is 'wrong'. Instead, we aim to demonstrate that a large variety of conclusions can be derived using these dictionaries (which could be cherry picked) and the possible explanations behind this high variety of conclusions.
+
+# Methods
+
+In the following two sections, we outline the operationalizations of presidential approval and news sentiment. Moreover, we also provide the validation procedures for the 37 sentiment scores.
+
+## Presidential approval rating time series
+
+The presidential approval rating data were curated by the American Presidency Project [-@americanpresidencyproject] hosted at the University of California, Santa Barbara. The presidential approval ratings from the Gallup Poll since 1943 were openly accessible online. The frequency of polling was irregular and ranged from every few weeks to every few days. In order to generate a regular time series, a daily time series of presidential approval ratings was created using spline interpolation between polls [as in @fu:2013:aos].
+
+## News sentiment time series
+
+The NYT data for this study was collected from ProQuest Historical Newspapers. We selected the NYT instead of another newspaper because it is an American 'newspaper of record'. We used the date of publication, content length (number of words) and sentiment scores extracted from the NYT corpus. The articles represented the entire publication output of the NYT from June 1, 1980 to January 31, 2006. All articles were converted to lowercase and tokenized. The tokenized version of articles was used for extracting sentiment scores[^3]. In total, the sentiment scores of 2,246,177 articles were available.
+
+[^3]: As mentioned previously, the developers of LSD provide a preprocessing script to remove all special cases [@Young2012]. We have not used this preprocessing script for two reasons. First, it maintains comparability to other dictionaries. Second, according to the manual of Lexicoder 3.0, this preprocessing script is not mandatory, but a recommendation. It is also reflected in the implementation of LSD in the text analysis suit quanteda [@benoit:2018].
+
+The sentiment scores extracted were all based on widely-used off-the-shelf dictionaries[^4]. Most of them have been used at least once in previous studies to quantify news sentiment[^5], although many of them are neither designed to measure news sentiment (e.g. measure moral foundations) nor measure sentiment in news text (e.g. measuring sentiment in product reviews). These dictionaries were General Inquirer (GI), Bing Liu (BL), Linguistic Inquiry and Word Count (LIWC), Affective Norms for English Words (ANEW), Dictionary of Affect in Language (DAL), Moral Foundation Dictionary (MFD), NRC Word-Emotion Association Lexicon (NRC) and Lexicoder Sentiment Dictionary (LSD). An at-a-glance summary of these scores is available in Appendix A.
+
+[^4]: In this paper, a sentiment dictionary is simply a word list. A sentiment score is a score calculated based on a sentiment dictionary. A sentiment dictionary can have multiple categories of words. For instance, General Inquirer has positive and negative categories. Therefore, one can calculate 2 sentiment scores based on General Inquirer. Therefore, we have "General Inquirer Positive" and "General Inquirer Negative" scores. Some dictionaries, e.g. Bing Liu, require one to use multiple categories of words to calculate one score.
+
+[^5]: This paper only focuses on news articles. Therefore, dictionaries for short texts, e.g. VADER [@gilbert2014vader], were not considered.
+
+### General Inquirer
+
+General Inquirer (GI) is one of the oldest computer-assisted content analysis systems available [@Stone1963]. The system conducts content analyses on any kind of text and can use various dictionaries. Recent literature [e.g. @Young2012] recognizes GI's capacity for sentiment analysis using a sentiment dictionary curated by a group of researchers from Harvard. The GI system pioneered the technique of counting matching words in a piece of text as an indicator of text property based on the bag-of-words and additivity assumptions. The original system can output raw sentiment scores (raw frequency of matching words) and standardized scores (raw frequency divided by word count). In this study, the raw frequency was used. Two scores were calculated using this dictionary: GI + and GI -.
+
+### Linguistic Inquiry and Word Count
+
+Linguistic Inquiry with Word Count (LIWC) is the most widely used off-the-shelf text analysis tool [@Tausczik2009; @pennebaker2015development]. As mentioned previously, the authors of LIWC argue that the words a writer uses provide information on the writer's psychological state. As a multidimensional measurement, the authors claim that the dimensions of LIWC correlate with 'attentional focus, emotional state, social relationships, thinking styles, and individual differences' [@Tausczik2009 pp. 14]. Some researchers have adopted the tool as a measure of news sentiment [e.g. @ji:2018:sgn; @walter:2019:by]. For our purposes, it is important to note that LIWC is a proprietary software suite with several editions of the bundled dictionaries. We only had access to the 2007 edition of the dictionary, which has 64 categories of words. In this study, we selected 6 dimensions of LIWC related to news sentiment, namely, total affect, positive emotions, negative emotions, anxiety, anger and sadness. Thus, 6 scores were calculated using LIWC (LIWC affect, LIWC +, LIWC -, LIWC anxiety, LIWC sadness). By default, the software gives standardized scores derived from raw frequency divided by word count.
+
+### Bing Liu
+
+Bing Liu (BL) dictionary contains two lists of words with positive and negative sentiments [@Hu2004]. The dictionary was proposed to quantify polarity of opinions from product reviews based on the frequency of matching words in a piece of text. In the original paper [@Hu2004], the 'orientation' of a text is quantified based on the difference between positive and negative word frequencies. This dictionary has been used to quantify news sentiment [e.g. @leetaru:2011:c; @walter:2019:by]. One score was calculated using this dictionary: BL.
+
+### Affective Norms for English Words
+
+Affective Norms for English Words (ANEW) is a dictionary based on human evaluation of 1,030 English words [@bradley1999affective]. Each word contains a numerical ANEW rating from 1 to 9 to capture the absence or presence of valence (pleasant to unpleasant), arousal (calm to excited) and dominance (controlled to dominated). The original dictionary was not created as a sentiment evaluation tool. Subsequent studies adopted the dictionary as a sentiment evaluation tool by totalling [@naveed:2011:b] or averaging [@dodds:2009:mhl] the ANEW rating of matching words in a sentence. In this study, the averaging approach was used. This dictionary has been in previous studies to quantify news sentiment, e.g. @gonzalez-bailon:2014:cnc. Three scores were calculated using this dictionary: ANEW valence, ANEW arousal and ANEW dominance.
+
+### Dictionary of Affect in Language
+
+Dictionary of Affect in Language [DAL, @whissell:1989:tdo] is a dictionary similar to ANEW, in which every word in the dictionary has a set of DAL scores ranging from 1 to 3 to capture the absence or presence of pleasantness, activation and imagery. The original developer applied the dictionary to different categories of text using the averaging approach [e.g. @whissell:2008:efb]. In this study, we also average raw scores. Three scores were calculated using this dictionary: DAL pleasantness, DAL activation and DAL imagery.
+
+### Moral Foundation Dictionary
+
+The Moral Foundation Dictionary [MFD, @graham:2009:l] is a dictionary based on the moral foundation theory proposed by the same group of authors [e.g. @haidt2012righteous]. Under that theory, there are five fundamental moral values: care/harm, fairness/cheating, ingroup loyalty/betrayal, authority/subversion, and purity/degradation. Similarly, the MFD classified words into these five axes with positive (virtue) and negative (vice) categories. Therefore, 10 categories of words are available. The original development of the dictionary was based on an expert evaluation of the words [@graham:2009:l]. As a validation, @graham:2009:l demonstrated the difference in word usage in religious texts between liberals and conservatives. The dictionary was subsequently used to analyse news text [@clifford:2013:hwd; @fulgoni2016empirical] to quantify the moral rhetoric of news text. Some studies billed the moral rhetoric of text as *moral sentiment* [e.g. @Dainas2015TheMF; @garten2016morality]. It is worth mentioning that the original developers adjusted the frequency of sentiment words by the total number of words in a piece of text [@graham:2009:l], but this is not always practised [e.g. @Dainas2015TheMF]. In this study, we use the unadjusted version of the MFD score. In total, 10 scores were calculated using this dictionary: MF Harm+ (Care), MF Harm -, MF Fairness +, MF Fairness - (cheating), MF Ingroup + (loyalty), MF Ingroup - (betrayal), MF Authority +, MF Authority - (subversion), MF Purity +, and MF Purity - (degradation).
+
+### NRC Word-Emotion Association Lexicon
+
+NRC Word-Emotion Association Lexicon (NRC) is a dictionary created by crowdsourcing the emotional meanings of words [@mohammad:2012:cwe]. The dictionary has categories of words about joy, anticipation, trust, surprise, fear, anger, disgust and sadness. These categories can be combined into two general categories of positive and negative emotions. The original paper does not provide a way to quantify the sentiment strength of a piece of text based on the dictionary. Subsequent studies [e.g. @vosoughi:2018] use a measure of length-adjusted frequency. In total, 10 scores were calculated: NRC Joy, NRC Anticipation, NRC Trust, NRC Surprise, NRC Fear, NRC Anger, NRC Disgust, NRC Sadness, NRC + and NRC -.
+
+### Lexicoder Sentiment Dictionary
+
+Lexicoder Sentiment Dictionary (LSD) is a dictionary specifically developed for measuring news affect [@Young2012]. Among all of the sentiment dictionaries included in this study, the development of LSD is the most comprehensive because it has been validated against human-coded media content and can take care of negation automatically. The dictionary contains words in two broad categories: positive and negative. The negated version of words (e.g. *not good*) is also considered. In the original paper, the developers suggested two ways of quantifying tone: *net tone*, calculated as the difference between proportions of positive words and negative words in a piece of text and another measurement, which was not named in the original article, calculated akin to BL's absolute difference in positive and negative word frequencies. We name this latter measurement *LSD absolute*. Both scores have been validated by the original developers and have been used as a measurement of news sentiment in time series analyses [@Young2012]. In total, 2 scores were calculated: LSD nettone and LSD absolute.
+
+## Validity measurements
+
+With 37 sentiment scores from our 2,246,177 articles (GI: 2, LIWC: 6, BL: 1, ANEW: 3, DAL: 3, MFD: 10, NRC: 10, LSD: 2), the following validity measurements were calculated: 1) convergent validity (the correlation matrix of 37 sentiment scores was created to evaluate how the scores correlate with each other) and 2) structural validity (singular value decomposition (SVD) was conducted to evaluate the latent structure).
+
+## Time series analysis
+
+For each of the 37 sentiment scores, we aggregated the sentiment of all NYT news stories by day and generated a daily regular time series of news sentiment (let $n_{t_{i}}$ represent the number of news stories and their sentiment score $S$ for a given day ${t_{i}}$, with the aggregated sentiment score $\bar{S}$ of day $t_{i}$ is calculated using Equation \ref{eq:1}). All the time series of $\bar{S_{t_{i}}}$ were mean-centred and made the absolute values of $\bar{S'_{t_{i}}}$ (Equations \ref{eq:2} to \ref{eq:4}).
+
+\begin{equation}
+  \label{eq:1}
+  \bar{S_{t_{i}}} = \frac{\sum_{j=i}^{n_{t_{i}}} S_{t_{ij}}}{n_{t_{i}}}
+\end{equation}
+
+\begin{equation}
+  \label{eq:2}
+  \bar{\bar{S}} = \frac{\sum_{k=i}^{t} \bar{S_{t_{k}}}}{t}
+\end{equation}
+
+\begin{equation}
+  \label{eq:3}
+  \sigma_ {\bar{S}} = \sqrt{\frac{\sum_{l=1}^{t} \bar{S}_{t_{l}} - \bar{\bar{S}}}{t - 1}}
+\end{equation}
+
+\begin{equation}
+  \label{eq:4}
+  \bar{S'_{t_{i}}} = \left | \frac{\bar{S_{t_{i}}} - \bar{\bar{S}}}{\sigma_{\bar{S}}} \right |
+\end{equation}
+
+The time series of presidential approval was similarly processed (mean-centred with absolute value as per Equations \ref{eq:2} to \ref{eq:4}).
+
+### Granger causality
+
+A bivariate Granger causality test was performed for each of the 37 sentiment scores with presidential approval according to the Direct Granger Method suggested by @soroka2002agenda for studying agenda setting. [^6] The same statistical procedure was conventionally used in many previous studies to study agenda setting [e.g. @lee:2014:amr; @jenkins:1999:hmi]. The maximum order was chosen at 30 days because previous time series studies identified that the agenda-setting power of traditional mass media can last for four weeks [@walgrave:2007:mmp].
+
+[^6]: Please refer to Appendix B for the description of the statistical test. Because we performed 37 tests on essentially the same set of data, the p-value for statistical significance should be adjusted using the Bonferroni method (alpha = 0.05 / 37= 0.001). In the true spirit of being a p-hacker, we have skipped this adjustment.
+
+In the true spirit of p-hacking, we hacked p-values even further by repeating the Granger causality analysis with the subset of NYT stories with the names of US presidents as a proxy of presidential news [using the same selection method as in @eshbaugh-soha:2010:tlp]; this p-hacking-in-disguise aligns with Cohen's argument [-@cohen:2004:ini]. Additionally, we also changed the dependent variable from presidential approval to University of Michigan Consumer Sentiment Index and even some random noise. This part of the analysis is reported in Appendix C.
+
+\newpage
+
+# Results
+
+## Validity measurements
+
+```{r fig1, fig.cap = "Correlation matrices of 37 sentiment scores (top), a subset of 14 positive sentiment scores (bottom left) and a subset of 15 negative sentiment scores (bottom right)\nNotes: For the below two correlation matrices, the sentiment scores are ordered by a clustering algorithm based on their correlations with each other. Positive sentiment scores include all virtue scores of MFD, GI +, ANEW Valence, DAL Pleasantness, LSD Net Tone, LSD Absolute, LIWC +, NRC Joy, NRC + and BL. Negative sentiment scores include all vice scores of MFD, GI-, LIWC-, LIWC Anxiety,  LIWC Sad, NRC Anger, NRC Disgust, NRC Fear, NRC Sadness, and NRC-. Some scores are not included in either positive and negative score matrices (e.g. NRC Anticipation, ANEW Dominance, ANEW Arousal, DAL Imagery, LIWC Affect) because their polarities are uncertain."}
+##knitr::include_graphics(c('corrplot_37_alpha.png'))
+library(magick)
+all <- image_scale(image_read("corrplot_37_alpha.png"), "1000")
+pos <- image_read("corrplot_37_positive.png")
+neg <- image_read("corrplot_37_negative.png")
+img <- c(pos, neg)
+image_append(c(all, image_append(image_scale(img, "900"))), stack = TRUE)
+```
+
+```{r, fig1a, fig.cap = "Histogram of correlation coefficients from positive pairs (top), negative pairs (middle), and all pairs (bottom)."}
+library(tidyverse)
+M <- readRDS(here::here("report/M.RDS"))
+diag(M) <- NA
+all <- tibble(pairs = "All pairs", r = as.vector(M)[!is.na(as.vector(M))])
+M_pos <- readRDS(here::here("report/M_pos.RDS"))
+diag(M_pos) <- NA
+pos <- tibble(pairs = "Positive pairs", r = as.vector(M_pos)[!is.na(as.vector(M_pos))])
+M_neg <- readRDS(here::here("report/M_neg.RDS"))
+diag(M_neg) <- NA
+neg <- tibble(pairs = "Negative pairs", r = as.vector(M_neg)[!is.na(as.vector(M_neg))])
+require(ggridges)
+bind_rows(all, pos, neg) %>% ggplot(aes(x = r, y = pairs, fill = pairs)) +   geom_density_ridges(stat = "binline", bins = 35, alpha = 0.3, draw_baseline = FALSE) + scale_y_discrete(expand = c(0, 0)) + ylab("Pairs") + theme(legend.position = "none") + scale_fill_brewer(palette="Dark2")
+```
+
+Figure \@ref(fig:fig1) shows the correlation matrix of the 37 sentiment scores. There are many abnormalities. When we group the sentiment scores by their polarity (Figure \@ref(fig:fig1), bottom left and bottom right; as a histogram in Figure \@ref(fig:fig1a)), not all sentiment scores with the same polarity have a correlation with each other. Some pairs, e.g. NRC + and ANEW Valence, have negative correlation. Only 40 pairs of positive sentiment scores (out of 91, 43.9%) and 51 pairs of negative sentiment scores (out of 105, 48.6%) have a positive correlation coefficient larger than 0.1. Median correlation coefficents for positive sentiment scores, negative sentiment scores, and all sentiment scores are `r round(median(pos$r), 3)` and `r round(median(neg$r), 3)` and `r round(median(all$r), 3)` respectively.
+
+
+Some pairs of positive and negative scores are strongly correlated (Figure \@ref(fig:fig1), top). For example, the GI+ and GI- scores exhibit a positive correlation coefficient of 0.85. This correlation may indicate that: 1) positive and negative news sentiment occurs simultaneously or 2) both scores correlate with an unmeasured third variable.
+
+
+Many of these abnormalities can be explained by the theory that both scores correlate with an unmeasured third variable. Firstly, whether or not a particular sentiment score adjusts for article length determines its correlation with article length (Table \@ref(tab:tab1)). As indicated by a correlation coefficient larger than 0.1 between the sentiment score and article length (Table \@ref(tab:tab1)), 18 scores (including GI+ and GI-) have a positive correlation with article length.
+
+```{r tab1}
+score_names <- rio::import(here::here("data/raw/score_names.csv"))
+rio::import(here::here("report/phack37.csv")) %>% left_join(score_names, by = c('score_names' = 'var_name')) %>% select(dictionary_name, cor_wc, pres_phack, pres_phack_adj) %>% papaja::apa_table(caption = "Correlation of 37 sentiment scores and Granger causality tests for all sentiment scores", longtable = TRUE, format.args = list(digits = 3, na_string = ""), col.names = c("Score", "Correlation", "Granger (unadjusted)", "Granger (adjusted)"), note = "Correlation: Correlation with content length - Pearson’s r; Granger (unadjusted): Granger causality test: P (unadjusted); Granger (adjusted): Granger causality test: P (content- length adjusted). The sentiment scores are sorted by their correlation with article length. The analysis from p-hacking should not be used to support or reject any substantive theory because it proceeds in an atheoretical manner. As we have conducted 38 tests with all of them at the 5% level, the expected number of tests with a p-value less than 0.05 purely by chance is 1.9.")
+```
+
+Secondly, the exploratory factor analysis (Figure \@ref(fig:fig2)) also aligns with the theory that both scores correlate with an unmeasured third variable. In this analysis, we extract the first component which explains most of the variance from these 37 sentiment scores. This component is helpful to test the structural validity, i.e. do these 37 sentiment scores collectively measure the latent construct of news sentiment? However, such a component score very strongly correlates with the article length (r=-0.933, Figure \@ref(fig:fig2)). Therefore, sentiment scores that do not adequately adjust for article length simply measure a 'latent construct' of unmeasured article length.
+
+```{r fig2, fig.cap = "Scatterplot of the first component from the factor analysis and content length (r=-0.933)", out.width = "400px"}
+knitr::include_graphics(here::here("report/pca_37.png"))
+```
+
+In sum, these sentiment scores might show convergent validity as indicated by the correlations among them. However, we have a very convincing alternative explanation for these correlations, namely, the influence of the unmeasured third variable of article length. The exploratory factor analysis indicates that these sentiment scores have low construct validity, that is, the measurement has a poor ability to effectively measure what it purports to be measuring. Based on both analyses, we cannot reliably tell whether these sentiment scores are measuring sentiment, article length or a murky mixture of both. In other words, the validity of these sentiment scores as a measurement of sentiment is questionable.
+
+## Granger causality: p-hacking attempt
+
+The results of the Granger causality test for predicting presidential approval are presented in Table \@ref(tab:tab1). Using the conventional p\<0.05 as the threshold of statistical significance, 9 scores (LIWC+, LIWC Anger, LIWC Anxiety, GI+, Bing Liu, MF Ingroup + MF Harm -, MF Authority - and LSD Absolute) emerge as statistically significant. As many sentiment scores tested here were not adjusted for article length, we performed an additional ad-hoc robustness analysis that takes into account the article length. Surprisingly, article length is a Granger cause of presidential approval (p\<0.001). We attempted to adjust the four significant Granger causes found in the previous analysis by dividing the scores with the article length. We found that only one of these forcibly adjusted sentiment scores (MF Harm -) remained a significant Granger cause (p = 0.003).
+
+Further p-hacking by using the subset of NYT content mentioning presidents' last names (Appedix C) also shows article length and MF harm vice as content-length adjusted significant Granger causes. In addition, using presidential news only, LSD Net Tone emerges as a new Granger cause for presidential approval. It is unclear whether this represents a genuine relationship or a fluke. In any case, the results concerning article length as an independent Granger cause for presidential approval disqualify all sentiment scores that do not adjust for article length. To be sure, even the remaining sentiment scores should not be picked based on the statistical significance we conducted in our p-hacking experiment.
+
+# Conclusion
+
+Our analyses of our 37 sentiment scores suggest that using off-the-shelf sentiment dictionaries can lead to unexpected validity problems. In this discussion, we organize our concerns about using off-the-shelf sentiment dictionaries by presenting four best practices for using off-the-shelf sentiment dictionaries for studying news sentiment. These four best practices are hardly original: most of them have been proposed in previous best practice articles [e.g. @Grimmer2013; @atteveldt:2018:wcm; @barberá:2020:atc]. With our empirical findings, this discussion illustrates the importance of these best practices.
+
+## Best practice \#1: do not use dictionaries unsuitable for your task
+
+A wrong choice of dictionary can lead to uninterpretable conclusions. Because this is a theoretical problem, we turn to it here first.
+
+Some dictionaries, although used in previous studies as tools of sentiment analysis, were not created for sentiment analysis. For example, MFD was created to measure word choice in texts and determine the moral foundations dominant in different communities. Here, it is helpful to note that the variable being measured by MFD, as named by the original authors, is *moral foundation endorsement* [@graham:2009:l]. The inappropriateness of using MFD as a measurement of general news sentiment is best illustrated with the ways in which some findings from the p-hacking Granger analysis may be misinterpreted. For example, the MF harm - score emerged as a significant Granger cause of change in presidential approval. However, we have very strong reservations about interpreting this score as a measurement of news sentiment or news tone. A review of the lexicons that fall into the MF harm vice group reveals that nearly all of them are nouns and verbs about war and conflicts (e.g. *war, suffering, attack,* etc.). They are mostly not stylistic text features conveying emotions, such as adjectives (e.g. painful, sad, depressing, hopeless) and adverbs (e.g. painfully, sadly, depressingly, hopelessly). Instead, these words are the entities and events themselves. The MF harm vice score is very likely not a measurement of news sentiment, but rather of media salience of conflict events. Many previous studies have shown the relationship between conflict events and presidential approval, that is, the rally around the flag effect [@schubert:2002:dpm]. Due to the construction of the dictionaries, many sentiment scores actually indicate topics and therefore may not be good indicators of 'emotions expressed in a text' when researchers want to study news texts covering different topics: news articles on some topics (e.g. conflict events) will then automatically have higher sentiment scores than other topics, purely due to the ways some dictionaries are constructed.
+
+We propose the first best practice: when studying news sentiment, one should choose dictionaries intended for sentiment analysis of news content (e.g., Lexicoder). However, there is no 'one-size-fits-all' solution. It can be highlighted in the analysis using the University of Michigan Consumer Sentiment Indicator (Appendix C). To be sure, changing the dependent variable of the analysis from presidential approval to Consumer Sentiment Indicator can generate a different set of results (e.g. LSD-based scores are no longer significant). Instead of endorsing one sentiment dictionary, we recommend that researchers use theoretically informed dictionaries suitable for the task at hand[^7]. Moreover, researchers should always check the lexicons in the dictionaries for topical words.
+
+[^7]: It is possible that a dictionary gives accurate results for a different task than it was developed for, especially if the tasks are conceptually similar. This can be confirmed through (re)validation, as discussed in the second best practice. However, we recommend caution in exploring which existing dictionaries can be reused for a different task. In particular, one should not simply validate many existing dictionaries to see which performs best on a given gold standard, due to concerns of overfitting and multiple comparisons.
+
+## Best practice \#2: do not assume that validity is a built-in feature of dictionaries; always revalidate
+
+After choosing a suitable dictionary, one needs to test for validity and reliability of the dictionary. This suggestion is hardly new: previous studies have demonstrated how some sentiment scores lack criterion validity and have domain specificity problems. The current study identifies other undesirable psychometric properties to further demonstrate this point. The convergent validity (positive sentiment scores are positively correlated with other positive sentiment scores) and discriminant validity (positive sentiment scores are negatively correlated with negative positive sentiment scores) of these sentiment scores, as demonstrated in Figure \@ref(fig:fig1), are also lacking. Negative sentiment scores and positive sentiment scores sometimes have a positive correlation. The structural validity for these sentiment scores is also difficult to interpret (Figure \@ref(fig:fig2)). Without closely scrutinizing the details, we may naïvely conclude that a hidden construct of news sentiment was actually measured by these sentiment scores; however, this naïve conclusion is unlikely to hold. For example, we show that the first component from the exploratory factor analysis is not a good measurement of the hidden construct of sentiment in text because it is actually tainted with the collective residual influence of article length (next paragraph). In sum, we cannot assume the validity of dictionaries are built-in. Not only these sentiment scores often lack criterion validity (whether or not they represent human understanding of sentiment, as reported in the previous validation studies), they also lack construct validity (whether or not they are measuring what they purport to be measuring). Therefore, we present a second best practice: one must always revalidate these dictionaries for the domain under study and publish the results of the revalidation with the subsequent analysis.
+
+## Best practice \#3: check for the influence of article length on sentiment scores and outcomes
+
+We found that many sentiment scores are mildly to strongly correlated with article length (Table \@ref(tab:tab1)). This residual influence is visualized in Figure \@ref(fig:fig2), which shows that the first component---an indicator that can explain the variance of our 37 scores ---has a strong correlation with article length. Such interpretation can also be used to interpret the positive correlation between positive and negative sentiment scores (Figure \@ref(fig:fig1)): both are strongly correlated with article length, which is only partially adjusted or even unadjusted.
+
+As indicated by our p-hacking Granger analysis, many sentiment scores were found to be Granger causes of presidential approval (Table \@ref(tab:tab1)). Owing to the fact that many of the scores have not been completely adjusted for the effect of article length, we conducted an ad-hoc robustness test to take article length into account. As a result, many scores were no longer significant.
+
+This influence of article length may not be a problem for content with less variability in length (e.g. tweets). However, in news analysis, this residual effect of article length is a problem: we found that article length is itself a Granger cause of presidential approval, which is of course a potentially meaningless artifact. This finding is surprising and, to our knowledge, has not yet been mentioned in the literature. We hypothesize that such a relationship can be explained by issue salience [@edwards:1995:epa]. Longer news articles, in general, may be indirect indicators of higher issue salience, although it is beyond the scope of this study to test this hypothesis. What is important to take away here for news analysis is that this problem of article length suggests that article length in itself may carry meaning.
+
+Because these sentiment scores can be heavily correlated with article length and article length itself can potentially carry substantive meaning, we propose a third best practice: use the length-adjusted version of sentiment scores (e.g. LSD's Net Tone or averaged DAL scores), if available. However, it is important to note that even when using these length-adjusted sentiment scores, one still needs to check whether or not article length can still affect the results. This check involves two steps: 1) checking residual influence of content length; 2) checking if content length can affect the outcomes. We showed in this study that some length-adjusted sentiment scores can still have a residual influence from article length (e.g. NRC positive, LIWC Anxiety).
+
+In addition, readers should be aware that these length-adjusted sentiment scores cannot be interpreted as a ratio scale. For example, a score of 0 does not indicate complete neutrality because length-adjusted sentiment scores are usually slightly biased towards either the positive or the negative due to the uneven baseline distribution of sentiment words in each category for a given dictionary. Therefore, the point of neutrality for these scores should always be calibrated before the scores are interpreted [@rauh:2018:vg].
+
+## Best practice \#4: do not use multiple dictionaries to test the same hypothesis
+
+The wide availability of multiple off-the-shelf dictionaries can create a situation in which researchers can apply multiple dictionaries to the same piece of text. As in the current study, we used the same NYT text data to generate 37 different sentiment scores. Using the language of experimental design, one can generate multiple non-manipulated independent variables[^8] using essentially the same data. This freedom to increase non-manipulated independent variables has previously been criticized for incentivizing p-hacking [@wicherts:2016:dfp; @simmons:2011:fpp]. Detection of p-hacking in literature is not trivial [@bishop:2016:p] and therefore we do not---and will never---have any evidence to suggest that the availability of multiple off-the-shelf dictionaries leads researchers to p-hack. Thus, we are not accusing our fellow researchers for p-hacking. Instead, we address this problem as a hypothetical risk and focus on how to prevent such hypothetical risk from becoming a genuine risk to science.
+
+[^8]: The adjectives *manipulated* and *non-manipulated* refer to whether or not the variable of interest is an experimental condition manipulated by researchers. For example, in a randomized control trial, random drug assignment is a manipulated independent variable while medical history of the subjects is a non-manipulated independent variable.
+
+From our p-hacking experiment, we found that using multiple dictionaries to test the same hypothesis can generate faulty---but significant---relationships. These off-the-shelf dictionaries are not resistant to domain-specific biases and to the influence of content length. But even without the aforementioned validity problems of these off-the-shelf dictionaries, one can expect to generate at least one statistically significant false positive result when one applies multiple dictionaries *en masse*. Hypothetically, it is entirely possible to use different off-the-shelf dictionaries to test the same statistical hypothesis until one obtains a statistically significant result. This is similar to the situation of 'physician shopping', where a patient visits multiple doctors to obtain medical opinions until he or she obtains an opinion that he or she wants to hear. Given the background of the ongoing replication crisis in science, this hypothetical 'dictionary shopping' could undermine the likelihood of valid conclusions and should thus be discouraged. One hedge against this 'dictionary shopping' risk in confirmatory studies is to enforce modern open science principles such as pre-registering research protocols. Studies that must use multiple dictionaries to test the same hypothesis should clearly document their usages and appropriately situate themselves as exploratory or hypothesis-generating studies.
+
+Practically, one may not want to go 'dictionary shopping' but still apply multiple dictionaries to test the same hypothesis. For example, @walter:2019:by first applied LIWC sentiment scores extracted from her news corpus to study the relationship between mentions of EU citizens and news sentiment in Brexit coverage. As a robustness check, she subsequently applied the BL sentiment score extracted from the same corpus and repeated the same analysis. Although this practice looks statistically sound, we discourage the comparison of one sentiment score with another as a robustness check because these sentiment scores are often measuring related but different concepts (see Appendix A, e.g. LIWC measures emotional states of the writer; BL extracts opinion from online reviews). The correlation between two sentiment scores can also be spurious, e.g. due to an unmeasured variable such as content length (Table \@ref(tab:tab1)). Thus, using two sentiment dictionaries to test the same hypothesis is not simply trying an alternative model specification as in a regular robustness test [@lu:2014:r], but instead using two independent variables with different meanings.
+
+We thus propose a fourth best practice: do not use multiple dictionaries to test the same statistical hypothesis. When possible, pre-register one's research protocol to resist the temptation of 'dictionary shopping'.
+
+## 'Revalidate, revalidate, revalidate'
+
+In the early days of computational research, researchers were overwhelmed by the contradiction between the increasing volume of text data on the one hand and the fact that traditional methods, such as quantitative content analysis, do not scale up very well on the other. In that era, the scalability of a method might have *trumped* concerns with validity, and this might be why methods with limited validity were (and still are) popular. However, the field of computational research is maturing to a point where validity is equally, if not more, important than scalability.
+
+Our findings support the observation that off-the-shelf dictionary-based methods come with significant pitfalls [@Ribeiro2016]. These methods might have been validated in the initial development. However, all such methods must be revalidated again by humans before applying them to new research questions and/or new text material, as indicated by the catchy motto '*validate, validate, validate*' [@Grimmer2013]. His point has been rightly recited in subsequent best practice papers for communication researchers, such as those by @boumans:2015:tst and @atteveldt:2018:wcm. The details about how to validate these methods are available in @song:2020:ivw. In Appendix D, we demonstrate how to use the R package oolong [@chan:oolong] to validate a sentiment score based on an off-the-shelf sentiment dictionary. In the demonstration, we show how to implement best practice \#2 and \#3.
+
+@song:2020:ivw based on their simulation study suggest that one should hand annotate at least 1% of the source material in a validation study. When the sample size of articles is not overwhelming, revalidation is a reasonable path to take. For example, the aforementioned study by @walter:2019:by is a reasonable case for taking this revalidation path. Hand annotating 1% of articles in her study (n=19,367) amounts to only 194 articles.
+
+As pointed out by @barbera2016methodological, the revalidation of off-the-shelf dictionaries can be labour-intensive and can quickly outweigh the advantage of using those dictionaries. The revalidation path of off-the-shelf tools is no longer reasonable when the sample size is large. Using this study as an example and applying @song:2020:ivw's suggestion, 22,461 articles would need to be hand annotated and that would cost a handsome amount of money[^9].
+
+[^9]: Suppose the human annotation is done using crowdsourcing, we use the parameters from a published study [@chan2020combining] to estimate the cost for this. According to the cost estimate specified in that paper, a crowdcoder is paid USD 0.03 per sentence. Suppose an article contains 6 sentences in average and thus the cost for a single round of coding would be $0.03 \times 6 \times 22,461 = USD 4,042$. In practice, one usually needs to have at least 3 coders for one article and thus the cost would be tripled to USD 12,126. An empirical study suggests the optimal number of crowdcoders is 9 [@lee:2019:rvm]. The ninefold of USD4,042 is USD36,378.
+
+If researchers had the resources to do so, then they may alternatively consider putting their energy towards creating new validated and customized sentiment assessment tools for their own research purposes, even though such tools may only be for one-time use [e.g. @fu:2013:aos]. We may thus approach such tools as we do syringes: it is safer to manufacture and use single-use, 'throw-away' syringes than reuse them. Crucially, using a 'throw-away' sentiment tool can also eliminate the risk of 'dictionary shopping' and guarantees the use of a validated sentiment tool. With human validation, new, more nuanced applications of dictionary-based sentiment tools have emerged. For example, @fogel-dror:2018:rav utilize off-the-shelf LSD in an analysis of sentiment against news entities using a validated, rule-based approach. If one has to hand annotate 1% of the material and that amounts to a few thousand articles, a new study shows that there is more than enough data to train and validate an accurate supervised machine learning model of news sentiment [@barberá:2020:atc]. Regardless, all these new applications require heavy human validation.
+
+Additionally, we encourage authors to replicate previous studies that make use of unvalidated off the shelf sentiment analyses. Using a validated sentiment analysis in the replication of these previous studies can certainly improve the strength of evidence supporting these previous findings.
+
+## Limitations
+
+The current study has two important limitations.
+
+We did not use length-adjusted versions of some scores, such as GI and MFD; instead, we used the unadjusted versions because they were used by previous studies. We replicated the exploratory factor analysis again with the length-adjusted version of GI and MFD scores and, as expected, the resultant first component exhibited a much weaker correlation with content length. This highlights the third best practice we present above. In our p-hacking attempt, using both the length-adjusted and unadjusted version would have only increased the false discovery rate of significant relationships.
+
+Similarly, preprocessing is consequential to generated sentiment scores. Similar to another benchmark study using LSD [@GonzlezBailn2015], this study has not studied the effect of preprocessing and for some dictionaries, e.g. LSD, we have not used the script provided by @Young2012 which has been shown to improve dictionaries' performance. We anticipate using that script would improve the performance of LSD but using that would also introduce an additional layer of heterogeneity in methodology. Also, we do not believe that would change our conclusion, particularly for those non-LSD sentiment scores. Although that preprocessing script is not used in this study, we still recommend users of LSD to use that preprocessing script in practical applications.
+
+In sum, this study found some undesirable psychometric properties in 37 off-the-shelf sentiment scores extracted from a large corpus of NYT articles. Using these sentiment scores to study the relationship between news sentiment and presidential approval in a p-hacking manner, we demonstrated that it is possible to use multiple sentiment scores to test the same statistical hypothesis to generate statistically significant causal results due to the residual influence of the confounding content length. Even after we forcibly adjusted for the effect of content length, the conclusions remained very difficult to interpret due to the ambiguity of topic and style words in these off-the-shelf sentiment dictionaries. The current study shows the adverse outcomes of applying these sentiment scores without proper revalidation. We also propose four best practices and suggest alternatives to using off-the-shelf sentiment dictionaries.
+
+\newpage
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs" custom-style="Bibliography"></div>
+\endgroup
+

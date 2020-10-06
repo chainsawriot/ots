@@ -1,0 +1,152 @@
+```{r atab1}
+library(tidyverse)
+ataglance <- rio::import(here::here("data/raw/at_a_glance.csv"))
+ataglance %>% knitr::kable(caption = "At-a-glance summary of 37 sentiment scores", longtable = TRUE, format.args = list(digits = 3, na_string = "")) %>% kableExtra::column_spec(1:6, width = "6em")
+```
+
+# Description of Granger test
+
+Bivariate Granger causality test [@granger:1969:icr] was used to determine whether or not the combination of both the past values of presidential approval and past values of news sentiment more accurately predict presidential approval today than using the past values of presidential approval alone. Therefore, we used the null model as the univariate autoregression model of presidential approval. We denote presidential approval (y) at day *t* as $y_{t}$ . The null model is presented in Equation \ref{eq:5}.
+
+\begin{equation}
+  \label{eq:5}
+y_{t} = \sum_{j=1}^{m} \alpha_{1_{j}} y_{(t-j)} + E_{1}(t)
+\end{equation}
+
+The value *m* is the maximum order of the Granger causality test. This value determines the ‘memory’ of the time series, that is, the length of time during which past values affect the current value. $E_{1}$ is the prediction error of the model. Coefficients $\alpha_{1}$ are regression coefficients of the null model. In addition to our null univariate autoregression model of presidential approval, the information from news sentiment was added to create the alternate model. We denote news sentiment (*x*) at day *t* as $x_{t}$. The alternate model is presented in Equation \ref{eq:6}.
+
+\begin{equation}
+  \label{eq:6}
+y_{t} = \sum_{j=1}^{m} \alpha_{2_{j}} y_{(t-j)} + \sum_{j=1}^{m} \beta_{1_{j}} x_{(t-j)} + E_{2}(t)
+\end{equation}
+
+Similarly, coefficients $\alpha_{2}$ and $\beta_{1}$ are also regression coefficients of the alternate model. As the null model and alternate model are nested, one can test whether the added coefficient $\beta_{1}$ was collectively significant using a F-based Wald test between the null model and alternate model. When the null hypothesis of the Wald test is rejected, we conclude the past values of news sentiment carry additional predictive information to improve the prediction of future presidential approval. In other words, news sentiment is a Granger cause of presidential approval.
+
+# Further p-hacking
+
+## By subset analysis
+
+In this part of the analysis, we subset the NYT data by selecting articles containing the last names of the presidents during the study period (i.e. Carter, Reagan, Bush and Clinton) as a proxy of presidential news [similar to the method in @eshbaugh-soha:2010:tlp]. In total, 266,527 articles were retained. We repeated the Granger analysis and the results are listed below. The findings are very similar to the analysis of all NYT content with the exception that the LSD Net Tone emerged as significant. While this may be a real effect, it could also be a fluke. Nonetheless, as mentioned in the text, the analysis from p-hacking should not be used to support or reject any substantive theory because it proceeds in an atheoretical manner.
+
+```{r tab_c1}
+library(tidyverse)
+score_names <- rio::import(here::here("data/raw/score_names.csv"))
+rio::import(here::here("report/phack37_pres.csv")) %>% left_join(score_names, by = c('score_names' = 'var_name')) %>% select(dictionary_name, cor_wc, pres_phack, pres_phack_adj) %>% papaja::apa_table(caption = "Correlation of 37 sentiment scores and Granger causality tests for all sentiment scores: subset analysis", longtable = TRUE, format.args = list(digits = 3, na_string = ""), col.names = c("Score", "Correlation", "Granger (unadjusted)", "Granger (adjusted)"), note = "Correlation: Correlation with content length - Pearson’s r; Granger (unadjusted): Granger causality test: P (unadjusted); Granger (adjusted): Granger causality test: P (content- length adjusted). The sentiment scores are sorted by their correlation with article length. The analysis from p-hacking should not be used to support or reject any substantive theory because it proceeds in an atheoretical manner. As we have conducted 38 tests with all of them at the 5% level, the expected number of tests with a p-value less than 0.05 purely by chance is 1.9.")
+```
+
+## By using an alternative dependent variable
+
+By using an alternative dependent variable from the University of Michigan Consumer Sentiment Indicator, we generate different p-values.
+
+```{r tab_c2}
+library(tidyverse)
+score_names <- rio::import(here::here("data/raw/score_names.csv"))
+rio::import(here::here("report/phack_michigan.csv")) %>% left_join(score_names, by = c('score_names' = 'var_name')) %>% select(dictionary_name, cor_wc, pres_phack, pres_phack_adj) %>% papaja::apa_table(caption = "Correlation of 37 sentiment scores and Granger causality tests for all sentiment scores: University of Michigan Consumer Sentiment Indicator", longtable = TRUE, format.args = list(digits = 3, na_string = ""), col.names = c("Score", "Correlation", "Granger (unadjusted)", "Granger (adjusted)"), note = "Correlation: Correlation with content length - Pearson’s r; Granger (unadjusted): Granger causality test: P (unadjusted); Granger (adjusted): Granger causality test: P (content- length adjusted). The sentiment scores are sorted by their correlation with article length. The analysis from p-hacking should not be used to support or reject any substantive theory because it proceeds in an atheoretical manner. As we have conducted 38 tests with all of them at the 5% level, the expected number of tests with a p-value less than 0.05 purely by chance is 1.9.")
+```
+
+## By using random noise
+
+Finally, we simulated random noise time series by shuffling the presidential approval time series along the date and then randomly selecting a sentiment score to conduct a Granger test. We replicated this analysis 10,000 times to generate the distribution of all p-values (Figure \@ref(fig:figc1)). This analysis was done to confirm a basic property of p-values, that is, that the distribution of p-values is uniform when a null hypothesis is true. We indeed found that the distribution was uniform and, moreover, that 504 (5.04%) of these p-values were lower than 0.05. Ultimately, this simulation reinforces our basic knowledge about hypothesis testing: when we increase the instances of testing the same hypothesis using similar data, the percentage of p-values lower than critical level by chance is exactly equal to preselected critical level. 
+
+```{r figc1, fig.cap = "Distribution of p-values, Note: the red line indicates p-value = 0.05.", out.width = "1000px"}
+knitr::include_graphics(here::here("report/deadsalmon.png"))
+```
+
+# Software implementation of best practices \#2 and \#3
+
+```{r, echo = FALSE, mesage = FALSE}
+set.seed(10)
+nyt <- tibble::tibble(content = readRDS(here::here("report/nyt.RDS"))) %>% sample_n(size = 2000)
+```
+
+The R package oolong [@chan:oolong] can be used to implement best practices \#2 and \#3.
+
+Suppose the data frame `nyt` contains 2,000 news articles in the column `content` (i.e. `nyt$content`) and you want to extract the news sentiment of these articles using LSD dictionary [@Young2012].
+
+Following the best practice #2, one should always revalidate these off-the-shelf dictionaries. This revalidation process involves human coding by at least 2 coders [@song:2020:ivw].
+
+```r
+require(oolong)
+oolong_test <- create_oolong(input_corpus = nyt$content,
+                             frac = 0.01,
+                             construct = "positive")
+oolong_test
+```
+
+The code above generates an *oolong test*. An oolong test is an R6 object with both the test content and methods for manual coding and analysis. The parameter *frac* controls the fraction of data being randomly selected as test content. Following @song:2020:ivw, this parameter should be set to at least 1%. The printout of the oolong test signals one to use the method `$do_gold_standard_test()` to generate gold standard, i.e. start manual coding.
+
+However, the test is created for only one coder. @song:2020:ivw recommend one should maintain intercoder reliability in any validation study. oolong supports this by a cloning mechanism. An oolong test can be cloned into multiple copies so that multiple human coders can work with the same oolong test.
+
+```r
+oolong_test2 <- clone_oolong(oolong_test)
+oolong_test2
+```
+
+At this point, one can ask two different coders and each of them to code an oolong test.
+
+For example, one asks Donald to code `oolong_test`.
+
+```r
+oolong_test$do_gold_standard_test()
+```
+
+Donald then can use the web-based interface to code all 20 NYT articles using a 5-point likert scale of sentiment (Figure \@ref(fig:figd1)).
+
+```{r figd1, fig.cap = "The user interface of oolong", out.width = "500px"}
+knitr::include_graphics(here::here("report/oolong.png"))
+```
+
+After Donald has done with his coding, one can then lock the oolong object to prevent further tampering.
+
+```r
+oolong_test$lock()
+```
+
+Another coder, Joe, can then work with the cloned oolong test.
+
+```r
+oolong_test2$do_gold_standard_test()
+oolong_test2$lock()
+```
+
+After the two coders have done their test, the test content can then be transformed into the coded content with the method `$turn_gold()`. This method converts the test content into a quanteda corpus [@benoit:2018].
+
+```r
+gold_standard <- oolong_test$turn_gold()
+```
+
+Then one can use that quanteda corpus to extract sentiment scores as usual. The score is called *target value* in oolong.
+
+```r
+require(quanteda)
+require(dplyr)
+
+tokens(gold_standard) %>%
+  tokens_compound(data_dictionary_LSD2015) %>%
+  dfm %>% 
+  dfm_lookup(data_dictionary_LSD2015) %>%
+  convert(to = "data.frame") %>%
+  mutate(words = ntoken(gold_standard),
+         pos = (positive + neg_negative),
+         neg = (negative + neg_positive),
+         nettone = (pos/words) - (neg/words)) %>%
+  pull(nettone) -> target_value
+```
+
+one can then analyze the two tests simultaneously using the function `summarize_oolong`.
+
+```r
+res <- summarize_oolong(oolong_test, oolong_test2,
+                        target_value = target_value)
+res
+```
+
+This operation will display interrater reliability metrics such as Krippendorff's $\alpha$. The result can also be display graphically. 
+
+```{r figd2, fig.cap = "A diagnostic plot generated by oolong", out.width = "500px"}
+knitr::include_graphics(here::here("report/diagplot.pdf"))
+```
+
+The criterion validity of the target value is displayed in the subplot at the top left. One should expect a strong correlation (Best practice \#2). The subplot at the bottom left displays the relationship between the target value (LSD) and article length. One should expect no correlation (Best practice \# 3).
+
+---

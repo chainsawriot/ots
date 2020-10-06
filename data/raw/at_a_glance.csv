@@ -1,0 +1,17 @@
+Dictionary,Categories,Scores,"Length adj,?",Intended use case,Measuring emotions?
+General Inquirer (GI),Positive Negative,Raw count of matching words in text,No,Measurement of sentiment in any text,Yes (polarity)
+Linguistic Inquiry with Word Count (LIWC),"Many, six categories are related to sentiment: total affect, positive emotions, negative emotions, anxiety, anger and sadness",Length-adjusted count of matching words in text,Yes,Providing information on the emotional states of the writer,Yes
+Moral Foundation Dictionary (MFD),"Five foundations (Fairness, Harm, Authority, Purity, Ingroup) x two types of valence (Vice, Virtue)",Raw count of matching words in text,No,Measurement of moral foundation endorsement in text,Not likely
+Bing Liu,"Positive, Negative","Absolute difference in raw counts of matching positive and negative words in text
+",Partial,Opinion mining from online reviews of products,Yes (polarity)
+"Affective Norms for English Words
+(ANEW)","Dominance, Valence, Arousal",Average the ANEW ratings of all words in text,Yes,Not created as a sentiment evaluation tool. Later adopted by other researchers as such.,Yes
+"Dictionary of Affect in Language
+(DAL)","Activation, Imaginary, Pleasantness",Average the DAL ratings of words in text,Yes,"Measurement of emotional fluctuations in artistic texts, e.g. lyrics",Yes
+NRC Word-Emotion Association Lexicon (NRC),"Joy, Anticipation, Trust, Surprise, Fear, Anger, Disgust, Sadness, Positive, Negative",Length-adjusted count of matching words in text,Yes,Not created as a sentiment evaluation tool. Later adopted by other researchers as such.,Yes
+Lexicoder Sentiment Dictionary (LSD),"Positive, Negative","Net tone: difference in proportion of matching positive and negative words in text
+
+Absolute: absolute difference in raw counts of matching positive and negative words in text
+","Net tone: Yes
+
+Absolute: Partial",Measurement of media affect in news article,Yes (polarity)

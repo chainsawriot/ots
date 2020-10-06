@@ -1,0 +1,40 @@
+var_name,dictionary_name
+mf_fairnessvice,MF Fairness -
+mf_harmvirtue,MF Harm +
+mf_authorityvirtue,MF Authority +
+mf_purityvirtue,MF Purity +
+inquirer_pos,GI +
+mf_harmvice,MF Harm -
+anew_dominance,ANEW Dominance
+dal_activation,DAL Activation
+mf_fairnessvirtue,MF Fairness +
+inquirer_neg,GI -
+mf_authorityvice,MF Authority -
+dal_imagery,DAL Imagery
+mf_ingroupvirtue,MF Ingroup +
+mf_ingroupvice,MF Ingroup -
+anew_valence,ANEW Valence
+mf_purityvice,MF Purity -
+dal_pleasantness,DAL Pleasantness
+anew_arousal,ANEW Arousal
+lsd_nettone,LSD Net Tone
+lsd_absolute,LSD Absolute
+liwc_affect,LIWC Affect
+liwc_posemo,LIWC +
+liwc_negemo,LIWC -
+liwc_anx,LIWC Anxiety
+liwc_anger,LIWC Anger
+liwc_sad,LIWC Sad
+nrc_anger,NRC Anger
+nrc_anticipation,NRC Anticipation
+nrc_disgust,NRC Disgust
+nrc_fear,NRC Fear
+nrc_joy,NRC Joy
+nrc_sadness,NRC Sadness
+nrc_surprise,NRC Surprise
+nrc_trust,NRC Trust
+nrc_negative,NRC -
+nrc_positive,NRC +
+bing_liu,BL
+lsd_diff,LSD Absolute
+wordcount,Article Length
