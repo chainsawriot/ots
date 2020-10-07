@@ -1,0 +1,56 @@
+---
+title             : "Four best practices for measuring news sentiment using 'off-the-shelf' dictionaries: a large-scale p-hacking experiment: Online Appendix"
+shorttitle        : "DICTIONARY-BASED METHODS"
+
+author: 
+  - name          : "Chung-hong Chan"
+    affiliation   : "1"
+    corresponding : yes
+    address       : "A5, 6 (section A), 68159 Mannheim, Germany"
+    email         : "chung-hong.chan@mzes.uni-mannheim.de"
+  - name          : "Joseph Bajjalieh"
+    affiliation   : "2"    
+  - name          : "Loretta Auvil"
+    affiliation   : "2"
+  - name          : "Hartmut Wessler"
+    affiliation   : "1"
+  - name          : "Scott Althaus"
+    affiliation   : "2"
+  - name          : "Kasper Welbers"
+    affiliation   : "3"
+  - name          : "Wouter van Atteveldt"
+    affiliation   : "3"
+  - name          : "Marc Jungblut"
+    affiliation   : "4"
+
+affiliation:
+  - id            : "1"
+    institution   : "Mannheimer Zentrum für Europäische Sozialforschung, Universität Mannheim, Germany"
+  - id            : "2"
+    institution   : "Cline Center for Advanced Social Research, University of Illinois Urbana-Champaign, USA"
+  - id            : "3"
+    institution   : "Department of Communication Science, Vrije Universiteit Amsterdam, Netherlands"
+  - id            : "4"
+    institution   : "Department of Media and Communication, Ludwig Maximilian University of Munich, Germany"
+    
+bibliography      : ["ots.bib"]
+
+floatsintext      : yes
+figurelist        : no
+tablelist         : no
+figsintext        : yes
+footnotelist      : no
+linenumbers       : no
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output:
+  papaja::apa6_pdf
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+```
+

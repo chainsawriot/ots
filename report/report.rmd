@@ -36,12 +36,13 @@ affiliation:
 authornote: |
   We would like to thank Dr Stefanie Walter (Zentrum für Medien-, Kommunikations- und Informationsforschung, Universität Bremen) and Professor Sandra González-Bailón (Annenberg School for Communication, University of Pennsylvania) for sharing details about their studies. This project was funded by a research grant from the 1) German Research Foundation (Deutsche Forschungsgemeinschaft), 2) The Netherlands Organisation for Scientific Research (Nederlandse Organisatie voor Wetenschappelijk Onderzoek) and 3) the National Endowment for the Humanities, through the Trans-Atlantic Platform’s Digging into Data Challenge funding program.
   This paper has been provisionally accepted by Computational Communication Research.
+  Source code and data are available at https://github.com/chainsawriot/ots/.
 
 abstract: |
   We examined the validity of 37 sentiment scores based on dictionary-based methods using a large news corpus and demonstrated the risk of generating a spectrum of results with different levels of statistical significance by presenting an analysis of relationships between news sentiment and U.S. presidential approval. We summarize our findings into four best practices: 1) use a suitable sentiment dictionary; 2) do not assume that the validity and reliability of the dictionary is 'built-in'; 3) check for the influence of content length and 4) do not use multiple dictionaries to test the same statistical hypothesis.
   
 keywords          : "sentiment analysis, p-hacking, news sentiment, agenda setting, text-as-data, validity"
-wordcount         : "9514"
+wordcount         : "7988"
 
 bibliography      : ["ots.bib"]
 
@@ -65,7 +66,6 @@ output:
 
 ```{r setup, include = FALSE}
 library("papaja")
-r_refs("r-references.bib")
 ```
 
 ```{r analysis-preferences}

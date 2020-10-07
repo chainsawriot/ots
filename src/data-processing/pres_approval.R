@@ -19,10 +19,10 @@ tr2df <- function(tr, pres = 33) {
 
 
 extractapproval <- function(pres = 33) {
-    read_html(paste0("data/raw/approval/", pres, ".html")) %>% html_node(css = "table[width='600']") %>% html_nodes('tr[bgcolor]') %>% map_dfr(tr2df, pres)
+    read_html(here::here(paste0("data/raw/approval/", pres, ".html"))) %>% html_node(css = "table[width='600']") %>% html_nodes('tr[bgcolor]') %>% map_dfr(tr2df, pres)
 }
 
 
 president_approval <- map_dfr(32:45, extractapproval)
 
-president_approval %>% mutate(start_date = mdy(start_date), end_date = mdy(end_date), approval = as.numeric(approval), disapproval = as.numeric(disapproval), other = as.numeric(other)) %>% rowwise %>% mutate(mid_date= mean.Date(c(start_date, end_date))) %>% ungroup %>% saveRDS("data/intermediate/president_approval.RDS")
+president_approval %>% mutate(start_date = mdy(start_date), end_date = mdy(end_date), approval = as.numeric(approval), disapproval = as.numeric(disapproval), other = as.numeric(other)) %>% rowwise %>% mutate(mid_date= mean.Date(c(start_date, end_date))) %>% ungroup %>% saveRDS(here::here("data/intermediate/president_approval.RDS"))

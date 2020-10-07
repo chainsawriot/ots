@@ -6,9 +6,9 @@
 
 require(tidyverse)
 
-deadsalmon <- readRDS("report/deadsalmon_pvalues.RDS")
+deadsalmon <- readRDS(here::here("report/deadsalmon_pvalues.RDS"))
 
 data.frame(deadsalmon) %>% ggplot(aes(x = deadsalmon)) + geom_histogram(binwidth = 0.01) + xlab("p-value") + geom_vline(xintercept = 0.05, col = 'red') -> ds
 
-ggsave("report/deadsalmon.png", ds)
+ggsave(here::here("report/deadsalmon.png"), ds)
 
