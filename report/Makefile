@@ -23,7 +23,7 @@ appendix: .FORCE
 
 clean:
 	rm *.Rmd
-	rm arxiv.rmd
+	rm socarxiv.rmd
 	rm appendices.tex
-	rm arxiv.tex
+	rm socarxiv.tex
 

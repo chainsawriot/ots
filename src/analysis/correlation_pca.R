@@ -31,15 +31,17 @@ png(here::here('report/corrplot_37.png'))
 corrplot(M, order="hclust", method = 'shade', type = 'upper')
 dev.off()
 
-png(here::here('report/corrplot_37_alpha.png'), width = 600, height = 600)
-corrplot(M, order="alphabet", method = 'shade', type = 'upper')
+png(here::here('report/corrplot_37_alpha.png'), width = 900, height = 900, res = 100)
+corrplot(M, order="alphabet", method = 'shade', type = 'upper', tl.cex = 0.9)
 dev.off()
+
+
 
 nyt %>% mutate(bing_liu = bing_liu_pos - bing_liu_neg) %>% select(-aid, -title, -source_name, -publication_date, -content_length, -pronouns, -mf_moralitygeneral, -bing_liu_pos, -bing_liu_neg, -wordcount) %>% svd -> pca37
 
 
 
-png(here::here('report/pca_37.png'), width = 600, height = 600)
+png(here::here('report/pca_37.png'), width = 900, height = 900, res = 100)
 plot(y = pca37$u[,1] , x = nyt$wordcount, ylab = "Component 1", xlab = "Word Count", , log = 'x', pch = 16, col = rgb(red=0, green=0, blue=0, alpha=0.01))
 lines(lowess(y = pca37$u[,1], x = nyt$wordcount), col = 'red', lwd = 2)
 dev.off()
@@ -56,7 +58,7 @@ rownames(M_pos) <- score_names$dictionary_name[match(rownames(M_pos), score_name
 saveRDS(M_pos, here::here("report/M_pos.RDS"))
 
 
-png(here::here('report/corrplot_37_positive.png'), width = 600, height = 600)
+png(here::here('report/corrplot_37_positive.png'), width = 900, height = 900, res = 100)
 corrplot(M_pos,method = 'shade', type = 'upper')
 dev.off()
 
@@ -71,7 +73,30 @@ rownames(M_neg) <- score_names$dictionary_name[match(rownames(M_neg), score_name
 
 saveRDS(M_neg, here::here("report/M_neg.RDS"))
 
-png(here::here('report/corrplot_37_negative.png'), width = 600, height = 600)
+png(here::here('report/corrplot_37_negative.png'), width = 900, height = 900, res = 100)
 corrplot(M_neg, method = 'shade', type = 'upper')
 dev.off()
 
+### Fig 1
+library(magick)
+all <- image_scale(image_read(here::here("report/corrplot_37_alpha.png")), "1000")
+pos <- image_read(here::here("report/corrplot_37_positive.png"))
+neg <- image_read(here::here("report/corrplot_37_negative.png"))
+img <- c(pos, neg)
+image_append(c(all, image_append(image_scale(img, "900"))), stack = TRUE) %>% image_write(here::here("report/fig1.png"), format = "png")
+
+## Fig2
+library(tidyverse)
+M <- readRDS(here::here("report/M.RDS"))
+diag(M) <- NA
+all <- tibble(pairs = "All pairs", r = as.vector(M)[!is.na(as.vector(M))])
+M_pos <- readRDS(here::here("report/M_pos.RDS"))
+diag(M_pos) <- NA
+pos <- tibble(pairs = "Positive pairs", r = as.vector(M_pos)[!is.na(as.vector(M_pos))])
+M_neg <- readRDS(here::here("report/M_neg.RDS"))
+diag(M_neg) <- NA
+neg <- tibble(pairs = "Negative pairs", r = as.vector(M_neg)[!is.na(as.vector(M_neg))])
+require(ggridges)
+bind_rows(all, pos, neg) %>% ggplot(aes(x = r, y = pairs, fill = pairs)) +   geom_density_ridges(stat = "binline", bins = 35, alpha = 0.3, draw_baseline = FALSE) + scale_y_discrete(expand = c(0, 0)) + ylab("Pairs") + theme(legend.position = "none") + scale_fill_brewer(palette="Dark2") -> fig2
+
+ggsave(here::here("report/fig2.png"), fig2, width = 5, height = 5)
